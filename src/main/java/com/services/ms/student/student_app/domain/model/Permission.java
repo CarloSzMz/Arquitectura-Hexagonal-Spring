@@ -1,0 +1,21 @@
+package com.services.ms.student.student_app.domain.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Permission {
+
+    private Long id;
+    private String name;
+    private String description;
+    private String resource;
+    private String action;
+}

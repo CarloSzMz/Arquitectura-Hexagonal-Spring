@@ -2,6 +2,7 @@ package com.services.ms.student.student_app.infrastructure.adapters.input.rest;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.services.ms.student.student_app.application.ports.input.StudentServicePort;
 import com.services.ms.student.student_app.infrastructure.adapters.input.rest.mapper.StudentRestMapper;
@@ -31,16 +32,19 @@ public class StudentRestAdapter {
     private final StudentRestMapper restMapper;
 
     @GetMapping("/v1/api")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public List<StudentResponse> findAll() {
         return restMapper.toStudentResponseList(servicePort.findAll());
     }
 
     @GetMapping("/v1/api/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public StudentResponse findById(@PathVariable Long id) {
         return restMapper.toStudentResponse(servicePort.findById(id));
     }
 
     @PostMapping("/v1/api")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<StudentResponse> save(@Valid @RequestBody StudentCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(restMapper.toStudentResponse(
@@ -48,12 +52,14 @@ public class StudentRestAdapter {
     }
 
     @PutMapping("/v1/api/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public StudentResponse update(@PathVariable Long id, @Valid @RequestBody StudentCreateRequest request) {
         return restMapper.toStudentResponse(
                 servicePort.update(id, restMapper.toStudent(request)));
     }
 
     @DeleteMapping("/v1/api/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(@PathVariable Long id) {
         servicePort.deleteById(id);
     }

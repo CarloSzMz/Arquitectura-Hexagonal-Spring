@@ -13,6 +13,16 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: create
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
 logging:
   level:
     "[org.hibernate.SQL]": DEBUG
+
+security:
+  jwt:
+    secret: "mySecretKeyForJWTTokenGenerationAndValidationMySecretKeyForJWTTokenGenerationAndValidation"
+    expiration: 86400000 # 24 hours in milliseconds
+    refresh-expiration: 604800000 # 7 days in milliseconds

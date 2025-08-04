@@ -14,6 +14,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
 import com.services.ms.student.student_app.domain.exception.StudentNotFoundException;
+import com.services.ms.student.student_app.domain.exception.UserNotFoundException;
+import com.services.ms.student.student_app.domain.exception.InvalidCredentialsException;
+import com.services.ms.student.student_app.domain.exception.TokenExpiredException;
+import com.services.ms.student.student_app.domain.exception.UnauthorizedException;
 import com.services.ms.student.student_app.domain.model.ErrorResponse;
 import com.services.ms.student.student_app.utils.ErrorCatalog;
 
@@ -34,12 +38,58 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         BindingResult result = ex.getBindingResult();
+        
+        // Determine if it's a student-related validation or generic
+        String objectName = result.getObjectName();
+        ErrorCatalog errorCatalog = objectName.toLowerCase().contains("student") 
+            ? ErrorCatalog.INVALID_STUDENT 
+            : ErrorCatalog.INVALID_REQUEST;
 
         return ErrorResponse.builder()
-                .code(ErrorCatalog.INVALID_STUDENT.getCode())
-                .message(ErrorCatalog.INVALID_STUDENT.getMessage())
+                .code(errorCatalog.getCode())
+                .message(errorCatalog.getMessage())
                 .details(result.getFieldErrors().stream().map(FieldError::getDefaultMessage)
                         .collect(Collectors.toList()))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ErrorResponse handleUserNotFoundException() {
+        return ErrorResponse.builder()
+                .code(ErrorCatalog.USER_NOT_FOUND.getCode())
+                .message(ErrorCatalog.USER_NOT_FOUND.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ErrorResponse handleInvalidCredentialsException() {
+        return ErrorResponse.builder()
+                .code(ErrorCatalog.INVALID_CREDENTIALS.getCode())
+                .message(ErrorCatalog.INVALID_CREDENTIALS.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(TokenExpiredException.class)
+    public ErrorResponse handleTokenExpiredException() {
+        return ErrorResponse.builder()
+                .code(ErrorCatalog.TOKEN_EXPIRED.getCode())
+                .message(ErrorCatalog.TOKEN_EXPIRED.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(UnauthorizedException.class)
+    public ErrorResponse handleUnauthorizedException(UnauthorizedException ex) {
+        return ErrorResponse.builder()
+                .code(ErrorCatalog.UNAUTHORIZED_ACCESS.getCode())
+                .message(ex.getMessage() != null ? ex.getMessage() : ErrorCatalog.UNAUTHORIZED_ACCESS.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
